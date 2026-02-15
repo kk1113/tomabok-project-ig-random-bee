@@ -473,7 +473,7 @@ function drawHeartArch(x) {
   ctx.restore();
 }
   function init() {
-    player = { x: 17600, y: groundY - 44, r: 22, vx: baseSpeed, vy: 0, onGround: true, alive: true, rotation: 0 };
+    player = { x: 60, y: groundY - 44, r: 22, vx: baseSpeed, vy: 0, onGround: true, alive: true, rotation: 0 };
     cam = { x: 0 };
     hearts = [];
     fireworks = [];
@@ -673,7 +673,7 @@ document.getElementById("dist").textContent = displayDist;
         I know I'm not the best with words when it comes to the romantic stuff, but I hope my feelings were able to reach you through the screen a little.
         Looking back, it's definitely crazy and just a little delulu to think that we've endured this 2300 mile distance between us for a whole year. I've definitely grown as a person because of you, and I want to say how amazing it has been to be with you this past year.
         Despite it all, I've put my depressive and calculating side down for this day and made this to fullheartedly celebrate our journey together and admire how far we've come, because I really have enjoyed it overall. And I hope you have too.
-        You're so special to me and I love you, baby. Thanks for being the amazing person that you are, and let's go conquer the world! <br><br>
+        You're so special to me and I love you, baby. Thanks for being the amazing person that you are. Let's go conquer the world! <br><br>
        
         Your bf,<br><br>
         Kyle
@@ -834,7 +834,7 @@ document.getElementById("dist").textContent = displayDist;
 
     // 2. If quiz IS done, handle the music
     const music = document.getElementById("bgMusic");
-    music.volume = 0.15;
+    music.volume = 0.1;
     if (music.paused) music.play().catch(e => console.log("Audio blocked"));
     
     // 3. Hide the modal and start the game
