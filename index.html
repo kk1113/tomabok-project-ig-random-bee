@@ -490,7 +490,7 @@ function drawHeartArch(x) {
         
         // Final Stretch Triple Jumps (Progress > 80%)
         if (progress > 0.8 && roll < 0.35) {
-          const tGap = 245; // WIDENED from 210 to 250 for easier landing
+          const tGap = 260; // WIDENED from 210 to 250 for easier landing
           obstacles.push({ x: nextX, y: groundY - 35, w: 35, h: 35 });
           obstacles.push({ x: nextX + tGap, y: groundY - 35, w: 35, h: 35 });
           obstacles.push({ x: nextX + (tGap * 2), y: groundY - 35, w: 35, h: 35 });
@@ -499,7 +499,7 @@ function drawHeartArch(x) {
         // Mid-Game Double Jumps
         else if (progress > 0.2 && roll < 0.4) {
           obstacles.push({ x: nextX, y: groundY - 35, w: 35, h: 35 });
-          obstacles.push({ x: nextX + 200, y: groundY - 35, w: 35, h: 35 }); // WIDENED from 180 to 220
+          obstacles.push({ x: nextX + 220, y: groundY - 35, w: 35, h: 35 }); // WIDENED from 180 to 220
           nextX += 220;
         } 
         // Single Obstacles
@@ -511,7 +511,7 @@ function drawHeartArch(x) {
 
       // THE GAP LOGIC: 
       // Changed the minimum gap from 200 to 350 so she has time to breathe!
-      const gapBase = 490 - (progress * 250); 
+      const gapBase = 550 - (progress * 250); 
       nextX += gapBase + (Math.random() * 150);
     }
   }
@@ -892,4 +892,5 @@ document.getElementById("dist").textContent = displayDist;
 </audio>
 </body>
 </html>
+
 
