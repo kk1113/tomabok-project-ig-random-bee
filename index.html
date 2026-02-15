@@ -5,6 +5,78 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Coconut's Valentine Run ❤️</title>
   <style>
+
+    #envelopeOverlay {
+    position: fixed; inset: 0; background: #0f0f14;
+    display: flex; justify-content: center; align-items: center; z-index: 200;
+}
+.envelope-wrapper { 
+    position: relative; width: 300px; height: 200px; 
+    background: #6a1b9a; /* Deep Purple */
+    border-radius: 0 0 10px 10px;
+    box-shadow: 0 15px 50px rgba(0,0,0,0.6);
+}
+.flap {
+    position: absolute; top: 0; width: 0; height: 0;
+    border-left: 150px solid transparent; border-right: 150px solid transparent;
+    border-top: 110px solid #7b1fa2; /* Slightly lighter purple */
+    transform-origin: top; transition: transform 0.6s ease; z-index: 4;
+}
+.pocket {
+    position: absolute; top: 0; width: 300px; height: 200px;
+    background: linear-gradient(135deg, #6a1b9a, #ff7043); /* Match game colors */
+    border-radius: 0 0 10px 10px; z-index: 2;
+}
+.front {
+    position: absolute; top: 0; width: 300px; height: 200px;
+    z-index: 3; /* Sits above the letter, below the flap */
+    background: linear-gradient(to top, rgba(106, 27, 154, 1), rgba(106, 27, 154, 0));
+    border-radius: 0 0 10px 10px;
+}
+.address {
+    position: absolute; bottom: 20px; right: 25px;
+    font-family: 'Cursive', serif; font-style: italic;
+    color: #ffd1ff; font-size: 18px; z-index: 5; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+.letter {
+    position: absolute; bottom: 5px; left: 10px; width: 280px; height: 170px;
+    background: #fff; border-radius: 5px; padding: 15px; text-align: center;
+    transition: transform 0.6s ease; z-index: 1; color: #333; box-sizing: border-box;
+}
+.heart-btn {
+    position: absolute; top: 85px; left: 125px; width: 50px; height: 50px;
+    background: #ff4f86; border: none; border-radius: 50%; color: white;
+    font-size: 24px; cursor: pointer; z-index: 6; transition: 0.3s;
+    box-shadow: 0 0 20px rgba(255, 79, 134, 0.6);
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); box-shadow: 0 0 30px rgba(255, 79, 134, 0.8); }
+    100% { transform: scale(1); }
+}
+
+/* Open State Animation */
+.envelope-wrapper.open .flap { transform: rotateX(180deg); z-index: 0; }
+.envelope-wrapper.open .letter { transform: translateY(-130px); z-index: 5; }
+.envelope-wrapper.open .heart-btn { opacity: 0; pointer-events: none; }
+
+    #quizOptions {
+    display: none;
+    flex-direction: column; /* Stack buttons on top of each other */
+    gap: 12px;
+    margin-top: 20px;
+}
+
+#quizProgressBar {
+    box-shadow: 0 0 10px #ff4f86, 0 0 20px #ff4f86;
+}
+
+#quizOptions .btn {
+    width: 100%; /* Make them full width */
+    padding: 15px;
+}
     html, body { 
     margin: 0; 
     height: 100%; 
@@ -82,7 +154,19 @@
     .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; text-align: left; }
     .info-item { background: rgba(255, 255, 255, 0.05); padding: 12px; border-radius: 12px; font-size: 14px; }
     .info-item b { display: block; color: #ff7aa2; margin-bottom: 4px; }
-    .btn { display: inline-block; cursor: pointer; user-select: none; padding: 18px 34px; border-radius: 15px; background: #ff4f86; color: #fff; font-weight: 700; font-size: 18px; border: none; transition: all 0.2s; }
+    .btn { 
+    display: inline-block; 
+    cursor: pointer; 
+    user-select: none; 
+    padding: 14px 20px; /* Slightly tighter padding for quiz buttons */
+    border-radius: 15px; 
+    background: #ff4f86; 
+    color: #fff; 
+    font-weight: 700; 
+    font-size: 16px; /* Reduced from 18px for better fit */
+    border: none; 
+    transition: all 0.2s; 
+}
     .btn:hover { background: #ff6b9a; transform: translateY(-2px); }
     /* Scrollable letter area for the final win screen */
 .letter-content {
@@ -102,20 +186,40 @@
   </style>
 </head>
 <body>
+<div id="envelopeOverlay">
+    <div class="envelope-wrapper" id="envelope">
+        <div class="flap"></div>
+        <div class="pocket"></div>
+        <div class="letter">
+            <p id="envelopeMessage">Happy V-Day!<br>Do you want to play a game?</p>
+            <button class="btn" id="yesBtn" style="display:none;">Yes!</button>
+        </div>
+        <div class="front"></div> <div class="address">To Bri</div>
+        <button class="heart-btn" id="openBtn">❤️</button>
+    </div>
+</div>
   <div class="hud">
   Distance: <b id="dist">0</b> / <b id="goal">2300</b>
 </div>
   <div class="modal" id="modal">
     <div class="card">
+        <div id="quizProgressContainer" style="display: none; width: 100%; background: rgba(255,255,255,0.1); height: 10px; border-radius: 5px; margin-bottom: 20px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);">
+  <div id="quizProgressBar" style="width: 0%; height: 100%; background: #ff4f86; transition: width 0.3s ease;"></div>
+</div>
       <h1 id="modalTitle">Coconut's Valentine Run ❤️</h1>
       <p id="modalText"></p>
       <div id="infoSection" class="info-grid">
         <div class="info-item"><b>How to Play</b> Space / ↑ / Tap to jump. Jump over the pink blocks.</div>
-        <div class="info-item"><b>Checkpoints</b> Trees turn pink and you unlock a message.</div>
+        <div class="info-item"><b>Checkpoints</b> Trees turn pink and you unlock a message!</div>
         <div class="info-item"><b>The Goal</b> Reach 2300 miles. It's the distance from Carson to Chantilly!</div>
-        <div class="info-item"><b>Prize</b> A mystery gift from Kyel </div>
+        <div class="info-item"><b>Prize</b> A gift from Kyel </div>
       </div>
-      <button class="btn" id="modalBtn">Start! </button>
+      <div id="quizOptions" style="display: none; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px;">
+  <button class="btn" id="optA"></button>
+  <button class="btn" id="optB"></button>
+</div>
+
+<button class="btn" id="modalBtn">Start!</button>
     </div>
   </div>
 
@@ -123,12 +227,113 @@
 
 <script>
 (() => {
-    const password = prompt("Enter the secret code to play:");
+    const password = prompt("Enter the secret code to play. HINT: Rhyme a word. A witch hitched a ride to the ditch to snitch on stitch.");
 if (password !== "bitch") { // Change this to your password
     alert("Incorrect code! Access denied.");
     document.body.innerHTML = "<h1>404 Not Found</h1>"; // Makes it look like a broken link
     return;
 }
+
+document.getElementById("openBtn").onclick = () => {
+    document.getElementById("envelope").classList.add("open");
+    // Show the button after the letter slides up
+    setTimeout(() => {
+        document.getElementById("yesBtn").style.display = "inline-block";
+    }, 800);
+};
+
+document.getElementById("yesBtn").onclick = function() {
+    const msg = document.getElementById("envelopeMessage");
+    
+    if (this.textContent === "Yes!") {
+        msg.innerHTML = "First, you must pass my test kekeke... ❤️";
+        this.textContent = "Okay!";
+    } else {
+        // Final fade out
+        const overlay = document.getElementById("envelopeOverlay");
+        overlay.style.transition = "opacity 1s ease";
+        overlay.style.opacity = "0";
+        setTimeout(() => {
+            overlay.style.display = "none";
+            showQuestion(); // Start your quiz logic
+        }, 1000);
+    }
+};
+// 1. QUIZ DATA
+// 1. THE BIG QUIZ DATA
+const questions = [
+  { q: "Where was our very first date?", a: "A Very Nice Tunnel", b: "A Museum", correct: "a" },
+  { q: "What's our go-to post food dessert?", a: "Ice-Cream", b: "Pastries", correct: "a" },
+  { q: "Which month did we first meet?", a: "October", b: "November", correct: "b" },
+  { q: "What word do I use to describe you the most?", a: "Beautiful", b: "Autistic", correct: "a" },
+  { q: "Who said 'I love you' first?", a: "Kyel", b: "Bri", correct: "a" },
+  { q: "How long is my cucumber?", a: "6 inches", b: "7 million inches", correct: "b" },
+  { q: "How much cheese board can a Brit Knee eat?", a: "HAI", b: "1 Serving Size", correct: "a" },
+  { q: "How many miles is Carson to Chantilly in a straight line?", a: "2,300", b: "1,800", correct: "a" },
+  { q: "What's our most played position?", a: "69", b: "Amen", correct: "b" },
+  { q: "Ready to play a game for your Valentine's prize?", a: "No bitch", b: "YES!", correct: "b" }
+];
+
+let currentQ = 0;
+let quizCompleted = false;
+
+function showQuestion() {
+  if (quizCompleted) return;
+
+  const q = questions[currentQ];
+  
+  // 1. Show the progress container
+  document.getElementById("quizProgressContainer").style.display = "block";
+  
+  // 2. Calculate percentage (e.g., 1/10 = 10%)
+  const percent = ((currentQ) / questions.length) * 100;
+  document.getElementById("quizProgressBar").style.width = percent + "%";
+
+  // 3. Update Text
+  document.getElementById("modalTitle").textContent = `Question ${currentQ + 1} of ${questions.length}`;
+  document.getElementById("modalText").textContent = q.q;
+  
+  // 4. Update UI visibility
+  document.getElementById("infoSection").style.display = "none";
+  document.getElementById("modalBtn").style.display = "none";
+  document.getElementById("quizOptions").style.display = "grid";
+  
+  document.getElementById("optA").textContent = q.a;
+  document.getElementById("optB").textContent = q.b;
+}
+
+function handleAnswer(choice) {
+  if (choice === questions[currentQ].correct) {
+    currentQ++;
+    if (currentQ < questions.length) {
+      showQuestion();
+    } else {
+      // QUIZ FINISHED!
+      quizCompleted = true;
+      // Inside handleAnswer where it says "QUIZ FINISHED!"
+quizCompleted = true;
+document.getElementById("quizProgressContainer").style.display = "none"; // <--- Add this
+      document.getElementById("quizOptions").style.display = "none";
+      document.getElementById("modalBtn").style.display = "inline-block";
+      document.getElementById("infoSection").style.display = "grid";
+      document.getElementById("modalTitle").textContent = "Coconut's Valentine Run ❤️";
+      document.getElementById("modalText").textContent = "Great job, baby! Now, reach the finish line to get your gift.";
+    }
+  } else {
+    alert("Incorrect! Who are you? My gf remembers the details... starting over! ❤️");
+    currentQ = 0;
+    showQuestion();
+  }
+}
+
+// LINK THE QUIZ BUTTONS TO THE LOGIC
+document.getElementById("optA").onclick = () => handleAnswer("a");
+document.getElementById("optB").onclick = () => handleAnswer("b");
+
+// 3. START THE QUIZ
+showQuestion();
+
+
   const canvas = document.getElementById("c");
   const ctx = canvas.getContext("2d");
   const W = canvas.width, H = canvas.height;
@@ -138,16 +343,74 @@ if (password !== "bitch") { // Change this to your password
 
   let player, cam, hearts, fireworks, obstacles, checkpointState, paused = true, gameStarted = false;
 
+
+let finalFade = 0; 
+  let isTerminated = false;
+  
+
   const CHECKPOINTS = [
-    { x: 1600,  title: "Checkpoint 1 💗", text: "Starting strong!" },
-    { x: 3200,  title: "Checkpoint 2 💞", text: "You've got a great rhythm." },
-    { x: 4800,  title: "Checkpoint 3 🌸", text: "Rolling through paradise." },
-    { x: 6400,  title: "Checkpoint 4 💘", text: "Almost halfway there!" },
-    { x: 8000,  title: "Checkpoint 5 🎀", text: "Halfway! You're a pro at this." },
-    { x: 9600,  title: "Checkpoint 6 💝", text: "The challenge is picking up!" },
-    { x: 11200, title: "Checkpoint 7 🌟", text: "11,200m! Stay focused." },
-    { x: 12800, title: "Checkpoint 8 ✨", text: "Final stretch! Ready for the triples?" },
-    { x: 14400, title: "Checkpoint 9 ❤️", text: "The finish line is in sight!" },
+    { 
+  x: 1600,  
+  title: "Checkpoint 1 💗", 
+  text: `Starting strong! Happy Valentine's Day my love! I love you so very much, and I'm really proud of you for being so good :) Keep on rolling Coconut~ 
+  <br><img src="https://raw.githubusercontent.com/kk1113/tomabok-project-ig-random-bee/main/Meme.jpg" style="width:50%; border-radius:5px; margin-top:5px;">`
+},
+    { 
+        x: 3200,  
+        title: "Checkpoint 2 💞", 
+    text: `They see me roll'in, they hat'in~ Baby I know I tell you everyday, but you're the most beautiful girl in the expanding universe!
+    <br><img src="https://raw.githubusercontent.com/kk1113/tomabok-project-ig-random-bee/main/image2.jpg" style="width:50%; border-radius:5px; margin-top:5px;">`
+
+},
+
+    { 
+        x: 4800,  
+        title: "Checkpoint 3 🌸", 
+    text: `My baby girl you are the best gamer! You know you make me daydream about the dirtiest things, love. Sorry I'm not able to clap your cheeks tonight like you deserve sweetie pie...
+<br><img src="https://raw.githubusercontent.com/kk1113/tomabok-project-ig-random-bee/main/image3.jpg" style="width:50%; border-radius:5px; margin-top:5px;">`
+},
+
+    { 
+        x: 6400,  
+        title: "Checkpoint 4 💘", 
+    text: `Almost halfway there! Hey shawty ;) Someone once said that love doesn't just sit there, like a stone, it has to be made, like bread; remade all the time, made new. I like the bread we're baking~ Your buns are nice too :)
+    <br><img src="https://raw.githubusercontent.com/kk1113/tomabok-project-ig-random-bee/main/image4.jpg" style="width:50%; border-radius:5px; margin-top:5px;">`
+    },
+
+    { 
+        x: 8000,  
+        title: "Checkpoint 5 🎀", 
+    text: `Halfway! You're too good at this. I hope all these messages are distracting you enough. How many times have you read this message? 😛
+    <br><img src="https://raw.githubusercontent.com/kk1113/tomabok-project-ig-random-bee/main/image5.jpg" style="width:50%; border-radius:5px; margin-top:5px;">`
+    },
+
+    { 
+        x: 9600,  
+        title: "Checkpoint 6 💝", 
+    text: `The pace is picking up! Baby I don't tell you enough that you're amazing inside and out. I think we fit really well too, both inside and out ;)
+    <br><img src="https://raw.githubusercontent.com/kk1113/tomabok-project-ig-random-bee/main/image6.jpg" style="width:50%; border-radius:5px; margin-top:5px;">`
+    },
+
+    { 
+        x: 11200, 
+        title: "Checkpoint 7 🌟", 
+    text: `1400m! You're locked in wowowowow. Funny, smart, kind, and beautiful. I read that someone said that about you recentlty. It was me.
+    <br><img src="https://raw.githubusercontent.com/kk1113/tomabok-project-ig-random-bee/main/image7.jpg" style="width:50%; border-radius:5px; margin-top:5px;">`
+},
+
+    { 
+        x: 12800, 
+        title: "Checkpoint 8 ✨", 
+    text: `Final stretch! Ready for the triples? There's a triple jump coming, honey. I'm warning you because I love you and because you are such a good girl. 
+    <br><img src="https://raw.githubusercontent.com/kk1113/tomabok-project-ig-random-bee/main/image 8.jpg" style="width:50%; border-radius:5px; margin-top:5px;">`
+},
+
+    { 
+        x: 16500, 
+        title: "Checkpoint 9 ❤️", 
+    text: `The finish line is in sight! You did amazing my love. I hope you had fun! 
+<br><img src="https://raw.githubusercontent.com/kk1113/tomabok-project-ig-random-bee/main/image9.jpg" style="width:50%; border-radius:5px; margin-top:5px;">`
+},
   ];
 
   function spawnHeart(x, y) {
@@ -210,7 +473,7 @@ function drawHeartArch(x) {
   ctx.restore();
 }
   function init() {
-    player = { x: 60, y: groundY - 44, r: 22, vx: baseSpeed, vy: 0, onGround: true, alive: true, rotation: 0 };
+    player = { x: 17600, y: groundY - 44, r: 22, vx: baseSpeed, vy: 0, onGround: true, alive: true, rotation: 0 };
     cam = { x: 0 };
     hearts = [];
     fireworks = [];
@@ -300,8 +563,38 @@ function drawHeartArch(x) {
     ctx.beginPath(); ctx.ellipse(1, -r+2, 7, 5, -0.8, 0, 7); ctx.fill();
     ctx.restore();
   }
+  
+  function terminateGame() {
+    isTerminated = true;
+    paused = false; 
+    document.getElementById("modal").style.display = "none";
+
+    // FADE MUSIC:
+    const music = document.getElementById("bgMusic");
+    const fadeAudio = setInterval(() => {
+        if (music.volume > 0.01) {
+            music.volume -= 0.01;
+        } else {
+            music.pause();
+            clearInterval(fadeAudio);
+        }
+    }, 100);
+    
+    for(let i = 0; i < 100; i++) {
+        fireworks.push({
+            x: player.x + (Math.random() * 400 - 200), 
+            y: player.y + (Math.random() * 400 - 200),
+            vx: (Math.random() * 10 - 5), 
+            vy: -Math.random() * 15,
+            life: 100, 
+            size: 10 + Math.random() * 15
+        });
+    }
+}
 
   function update() {
+    if (isTerminated) return; // Stop normal game logic during the finale
+    // ... the rest of your update code
     // Inside update()
     if (gameStarted && !paused && player.alive) {
       // Lowering to 0.15 makes the trail look more delicate
@@ -338,7 +631,7 @@ document.getElementById("dist").textContent = displayDist;
         cp.hit = true; 
         paused = true;
         document.getElementById("modalTitle").textContent = cp.title;
-        document.getElementById("modalText").textContent = cp.text;
+        document.getElementById("modalText").innerHTML = cp.text;
         
         // CHANGE BUTTON TEXT HERE
         document.getElementById("modalBtn").textContent = "Continue";
@@ -374,11 +667,16 @@ document.getElementById("dist").textContent = displayDist;
       // 3. DEFINE THE LETTER CONTENT FIRST
       const longLetter = `
         Happy Valentine's Day!<br><br>
-        You've just finished 2,300 meters of our journey together, but in reality, I feel like I've known you for a thousand miles. 
-        You make every single day feel like a sunset in paradise.<br><br>
-        Thank you for being my teammate, my best friend, and my favorite adventure. I love you more than all the stars in this purple sky.<br><br>
-        Yours forever,<br>
-        [Your Name]
+        Although I cannot be with you today, and I am so very sad that we can't celebrate this occasion together over a nice meal and later on a comfy bed, 
+        I hope this game still brought a little bit of joy to you and made you feel special, my love. I thought of us the entire time I was building it, and I couldn't help but laugh at how many little things we have connected over the past year. 
+        From petnames to insides jokes to memes and just our general everyday experiences, I found so many things from our time together that I could incorporate into this project for you.
+        I know I'm not the best with words when it comes to the romantic stuff, but I hope my feelings were able to reach you through the screen a little.
+        Looking back, it's definitely crazy and just a little delulu to think that we've endured this 2300 mile distance between us for a whole year. I've definitely grown as a person because of you, and I want to say how amazing it has been to be with you this past year.
+        Despite it all, I've put my depressive and calculating side down for this day and made this to fullheartedly celebrate our journey together and admire how far we've come, because I really have enjoyed it overall. And I hope you have too.
+        You're so special to me and I love you, baby. Thanks for being the amazing person that you are, and let's go conquer the world! <br><br>
+       
+        Your bf,<br><br>
+        Kyle
         
         <div class="voucher">
     <div class="coin-container">
@@ -386,7 +684,7 @@ document.getElementById("dist").textContent = displayDist;
     </div>
     <h2>VALENTINE'S GIFT COIN</h2>
     <div class="amount">$50</div>
-    <p>Good for one amazing date night!</p>
+    <p>Because you've been so good with your personal finances and you deserve to shop!</p>
 </div>
       `;
 
@@ -396,7 +694,7 @@ document.getElementById("dist").textContent = displayDist;
       const textElement = document.getElementById("modalText");
       textElement.innerHTML = `<div class="letter-content">${longLetter}</div>`;
       
-      document.getElementById("modalBtn").textContent = "Play Again";
+      document.getElementById("modalBtn").textContent = "The End ❤️";
       document.getElementById("infoSection").style.display = "none"; // Clears the icons to make space
       document.getElementById("modal").style.display = "flex";
     }
@@ -495,23 +793,56 @@ document.getElementById("dist").textContent = displayDist;
       ctx.restore();
     });
 
+    if (isTerminated) {
+    // 1. Keep spawning fireworks for the finale
+    if (Math.random() < 0.3) {
+        spawnHeart(cam.x + Math.random() * W, H); // Rain hearts from the bottom
+    }
+
+    // 2. Increase the fade-out speed
+    finalFade += 0.005; 
+    
+    // 3. Draw the black overlay
+    ctx.fillStyle = `rgba(15, 15, 20, ${finalFade})`;
+    ctx.fillRect(0, 0, W, H);
+
+    // 4. Draw the final text when it's dark enough
+    if (finalFade > 0.7) {
+        ctx.fillStyle = `rgba(255, 122, 162, ${finalFade})`;
+        ctx.font = "bold 40px system-ui";
+        ctx.textAlign = "center";
+        ctx.fillText("Kyel x Eruab <3", W/2, H/2);
+    }
+}
+
     requestAnimationFrame(draw);
   }
 
+  
+
   document.getElementById("modalBtn").addEventListener("click", () => {
+    // 1. If the quiz isn't done yet, show the first question and stop here
+    if (!quizCompleted) {
+        showQuestion();
+        return;
+    }
+
+    if (document.getElementById("modalBtn").textContent === "The End ❤️") {
+        terminateGame();
+        return; 
+    }
+
+    // 2. If quiz IS done, handle the music
     const music = document.getElementById("bgMusic");
-
-    // Set volume here (0.3 is usually a nice background level)
     music.volume = 0.15;
-
     if (music.paused) music.play().catch(e => console.log("Audio blocked"));
     
+    // 3. Hide the modal and start the game
     document.getElementById("modal").style.display = "none";
     
     if (!player.alive || player.x >= finishX) {
-        // Reset the modal content for the next time it pops up
+        // Reset for a new run
         document.getElementById("infoSection").style.display = "grid"; 
-        document.getElementById("modalText").innerHTML = "A virtual letter for you love";
         init();
     }
     
@@ -542,7 +873,6 @@ document.getElementById("dist").textContent = displayDist;
   }, { passive: false });
 
   init();
-  document.getElementById("modalText").textContent = "A virtual letter for you my love";
   setInterval(update, 1000/60);
   draw();
 })();
