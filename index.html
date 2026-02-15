@@ -472,7 +472,7 @@ function drawHeartArch(x) {
   
   ctx.restore();
 }
-  function init() {
+ function init() {
     player = { x: 60, y: groundY - 44, r: 22, vx: baseSpeed, vy: 0, onGround: true, alive: true, rotation: 0 };
     cam = { x: 0 };
     hearts = [];
@@ -484,25 +484,35 @@ function drawHeartArch(x) {
     while (nextX < finishX - 500) {
       const progress = nextX / finishX; 
       const nearCP = CHECKPOINTS.some(cp => Math.abs(nextX - cp.x) < 300);
+      
       if (!nearCP) {
         const roll = Math.random();
+        
+        // Final Stretch Triple Jumps (Progress > 80%)
         if (progress > 0.8 && roll < 0.35) {
-          const tGap = 210;
+          const tGap = 230; // WIDENED from 210 to 250 for easier landing
           obstacles.push({ x: nextX, y: groundY - 35, w: 35, h: 35 });
           obstacles.push({ x: nextX + tGap, y: groundY - 35, w: 35, h: 35 });
           obstacles.push({ x: nextX + (tGap * 2), y: groundY - 35, w: 35, h: 35 });
           nextX += (tGap * 2);
-        } else if (progress > 0.2 && roll < 0.4) {
+        } 
+        // Mid-Game Double Jumps
+        else if (progress > 0.2 && roll < 0.4) {
           obstacles.push({ x: nextX, y: groundY - 35, w: 35, h: 35 });
-          obstacles.push({ x: nextX + 180, y: groundY - 35, w: 35, h: 35 });
-          nextX += 180;
-        } else {
+          obstacles.push({ x: nextX + 175, y: groundY - 35, w: 35, h: 35 }); // WIDENED from 180 to 220
+          nextX += 220;
+        } 
+        // Single Obstacles
+        else {
           const isTall = Math.random() < 0.3; 
           obstacles.push({ x: nextX, y: isTall ? groundY - 70 : groundY - 35, w: 35, h: isTall ? 70 : 35 });
         }
       }
-      const gapBase = 500 - (progress * 300); 
-      nextX += gapBase + (Math.random() * 100);
+
+      // THE GAP LOGIC: 
+      // Changed the minimum gap from 200 to 350 so she has time to breathe!
+      const gapBase = 450 - (progress * 250); 
+      nextX += gapBase + (Math.random() * 150);
     }
   }
 
